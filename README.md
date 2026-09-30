@@ -38,7 +38,7 @@ flowchart TB
     end
 
     subgraph Data["数据层"]
-        PG[(("PostgreSQL<br/>业务数据"))]
+        PG[("PostgreSQL<br/>业务数据")]
         Vector[("PgVector<br/>1024维向量库 HNSW")]
         Redis[("Redis<br/>分布式锁 + 医生缓存")]
     end
