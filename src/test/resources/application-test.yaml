@@ -1,0 +1,20 @@
+# 测试环境独立配置（通过 @ActiveProfiles("test") 激活）
+# 解决：DashScope starter 在 API key 为空字符串时直接抛出异常（Spring 上下文无法启动）
+spring:
+  ai:
+    dashscope:
+      # 测试时推荐：①系统环境变量 DASHSCOPE_API_KEY；②JVM -Ddashscope.api.key=xxx；
+      # ③或把下一行的占位默认值直接改为真实 sk-xxxx（仅限本地，禁止提交到仓库）
+      api-key: ${DASHSCOPE_API_KEY:${OPENAI_API_KEY:${dashscope.api.key:}}}
+    # 测试环境允许 PgVector 自动建表/建索引（首次运行需要；生产请关闭）
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+  datasource:
+    # 指向测试用数据库（建议与生产隔离；如复用 vectordb，可改为 vectordb_test）
+    url: jdbc:postgresql://localhost:5432/vectordb
+    username: postgres
+    password: 123456
+logging:
+  level:
+    com.alibaba.cloud.ai.dashscope: info

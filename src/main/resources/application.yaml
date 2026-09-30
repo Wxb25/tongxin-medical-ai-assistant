@@ -1,0 +1,60 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: tongxin-medical-ai-assistant
+  ai:
+    dashscope:
+      # 阿里云百炼 API Key（生产环境通过环境变量 DASHSCOPE_API_KEY 注入）
+      api-key: ${DASHSCOPE_API_KEY:${OPENAI_API_KEY:}}
+      chat:
+        options:
+          model: qwen-plus
+      embedding:
+        options:
+          model: text-embedding-v3
+          dimensions: 1024
+    vectorstore:
+      pgvector:
+        # 向量表名：与 Embedding 维度保持一致（text-embedding-v3 输出 1024 维）
+        table-name: ai_vector_store
+        index-type: hnsw
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/vectordb}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: org.postgresql.Driver
+  data:
+    redis:
+      # Redis 连接（生产环境通过环境变量覆盖）
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:0}
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          max-wait: 3000ms
+
+# JWT 鉴权配置
+jwt:
+  # Base64 编码的 HS256 秘钥（≥256 位）。生产环境强烈建议通过环境变量 JWT_SECRET 注入
+  secret: ${JWT_SECRET:Y2hhbmdlLW1lLXRvbmcteWluLW1lZGljYWwtYWktYXNzaXN0YW50LXNlY3JldC1rZXktMjU2}
+  # token 有效期：24 小时（毫秒）
+  expiration: 86400000
+
+# 业务缓存配置（Redis key 前缀与 TTL，单位秒）
+cache:
+  doctor-detail-ttl: 600       # 医生详情缓存 10 分钟
+  doctor-schedule-ttl: 120     # 医生排班缓存 2 分钟（号源实时性要求高）
+  appointment-lock-ttl: 10     # 预约分布式锁 10 秒
+
+logging:
+  level:
+    org.springframework.ai.chat.client.advisor: debug
+    com.tongxin.ai: debug
+    # DashScope 请求/响应调试（需要时再打开）
+    # com.alibaba.cloud.ai.dashscope: trace
