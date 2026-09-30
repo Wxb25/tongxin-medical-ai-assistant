@@ -18,43 +18,51 @@
 
 ```mermaid
 flowchart TB
-    subgraph Frontend["前端层"]
-        User["用户端 tongxin-user<br/>Vue3 + TS + Element Plus"]
-        Admin["管理端 tongxin-admin<br/>Vue3 + TS + Element Plus"]
+    classDef fe fill:#eff6ff,stroke:#93c5fd,color:#1e3a8a
+    classDef be fill:#ffffff,stroke:#cbd5e1,color:#0f172a
+    classDef ai fill:#fffbeb,stroke:#fcd34d,color:#78350f
+    classDef db fill:#f8fafc,stroke:#94a3b8,color:#334155
+
+    subgraph FE["前端层"]
+        direction LR
+        U("用户端<br/>Vue3 · TS · Element Plus"):::fe
+        A("管理端<br/>Vue3 · TS · Element Plus"):::fe
     end
 
-    subgraph Backend["后端服务层 Spring Boot 3.4"]
-        Controller["Controller 层<br/>RESTful API + SSE"]
-        Service["Service 层<br/>业务逻辑 + 事务"]
-        Mapper["Mapper 层<br/>MyBatis-Plus"]
-        Interceptor["JWT 拦截器<br/>权限鉴权"]
-        Exception["全局异常处理器<br/>统一错误响应"]
+    subgraph BE["后端服务层 · Spring Boot 3.4"]
+        direction LR
+        C("Controller<br/>REST API · SSE"):::be
+        S("Service<br/>业务逻辑 · 事务 · MyBatis-Plus"):::be
+        C --> S
     end
 
-    subgraph AI["AI 能力层 Spring AI 1.0"]
-        Chat["对话服务<br/>qwen-plus + SSE 真流式"]
-        RAG["RAG 检索增强<br/>TokenTextSplitter + PgVector 相似度检索"]
-        Tool["Function Calling<br/>查医生 / 看排班 / 预约挂号"]
+    subgraph AIL["AI 能力层 · Spring AI 1.0"]
+        direction LR
+        Chat("智能对话<br/>qwen-plus · 真流式"):::ai
+        RAG("RAG 检索增强<br/>向量相似度召回"):::ai
+        Chat --> RAG
     end
 
-    subgraph Data["数据层"]
-        PG[("PostgreSQL<br/>业务数据")]
-        Vector[("PgVector<br/>1024维向量库 HNSW")]
-        Redis[("Redis<br/>分布式锁 + 医生缓存")]
+    subgraph DL["数据层"]
+        direction LR
+        PG[("PostgreSQL<br/>业务数据")]:::db
+        Redis[("Redis<br/>缓存 · 分布式锁")]:::db
+        Vec[("PgVector<br/>1024维 HNSW")]:::db
     end
 
-    User -->|HTTP/SSE| Controller
-    Admin -->|HTTP| Controller
-    Controller --> Interceptor
-    Controller --> Service
-    Service --> Mapper
-    Service --> AI
-    Chat --> RAG
-    Chat --> Tool
-    Tool --> Service
-    Mapper --> PG
-    RAG --> Vector
-    Service --> Redis
+    U --> C
+    A --> C
+    S --> Chat
+    RAG --> Vec
+    S --> PG
+    S --> Redis
+    Chat -. "Function Calling · 查医生 / 排班 / 预约" .-> S
+
+    linkStyle 8 stroke:#f59e0b,stroke-width:1.5px
+    style FE fill:#fafbfc,stroke:#e2e8f0,color:#475569
+    style BE fill:#fafbfc,stroke:#e2e8f0,color:#475569
+    style AIL fill:#fafbfc,stroke:#e2e8f0,color:#475569
+    style DL fill:#fafbfc,stroke:#e2e8f0,color:#475569
 ```
 
 ## 核心功能
